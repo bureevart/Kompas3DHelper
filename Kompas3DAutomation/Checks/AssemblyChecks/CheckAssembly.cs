@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Kompas3DAutomation
+namespace Kompas3DAutomation.Checks.AssemblyChecks
 {
     public class CheckAssembly : CheckBase
     {

@@ -10,7 +10,7 @@ namespace Kompas3DAutomation
 {
     public class KompasConnectionObject
     {
-        public KompasObject _kompas;
+        private KompasObject _kompas;
         private bool _isConnected = false;
 
         public void Connect()

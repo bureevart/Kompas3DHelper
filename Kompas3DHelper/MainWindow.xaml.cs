@@ -1,14 +1,17 @@
 ﻿using Kompas3DAutomation;
 using Kompas3DAutomation.Checks;
+using Kompas3DAutomation.Checks.AssemblyChecks;
+using Kompas3DAutomation.Checks.DrawingChecks;
+using Kompas3DAutomation.Checks.Part3DChecks;
 using Kompas3DAutomation.Results;
 using Kompas3DHelper.ViewModels;
 using Microsoft.Win32;
 using System;
 using System.IO;
 using System.Windows;
-using static Kompas3DAutomation.CheckAssembly;
-using static Kompas3DAutomation.CheckDrawing;
-using static Kompas3DAutomation.CheckPart3D;
+using static Kompas3DAutomation.Checks.AssemblyChecks.CheckAssembly;
+using static Kompas3DAutomation.Checks.DrawingChecks.CheckDrawing;
+using static Kompas3DAutomation.Checks.Part3DChecks.CheckPart3D;
 
 namespace Kompas3DHelper
 {

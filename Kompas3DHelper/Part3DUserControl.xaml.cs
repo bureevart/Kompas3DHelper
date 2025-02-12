@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using static Kompas3DAutomation.CheckPart3D;
+using static Kompas3DAutomation.Checks.Part3DChecks.CheckPart3D;
 
 namespace Kompas3DHelper
 {
@@ -45,9 +45,21 @@ namespace Kompas3DHelper
                 if (Part3DCheck5.IsChecked == true)
                     checks |= Part3DChecks.LayeredObjectPosition;
                 if (Part3DCheck6.IsChecked == true)
+                {
                     checks |= Part3DChecks.HiddenObjectsPresent;
+                    if(Part3DCheck61.IsChecked != true) 
+                        checks |= Part3DChecks.DontCheckSketches;
+                    if (Part3DCheck62.IsChecked != true)
+                        checks |= Part3DChecks.DontCheckCoordinates;
+                }
                 return checks;
             }
+        }
+
+        private void Part3DCheck6_CheckedStateChanged(object sender, RoutedEventArgs e)
+        {
+            Part3DCheck61.Visibility = Part3DCheck6.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+            Part3DCheck62.Visibility = Part3DCheck6.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

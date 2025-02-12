@@ -21,7 +21,9 @@
             <CheckBox Grid.Row="2" x:Name="Part3DCheck3" Content="Цвет модели соответствует заданному" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <CheckBox Grid.Row="3" x:Name="Part3DCheck4" Content="Не допускается наличие более одного твердого тела в файле модели" HorizontalAlignment="Left" VerticalAlignment="Top"/>
             <CheckBox Grid.Row="4" x:Name="Part3DCheck5" Content="Проверка расположения объектов по слоям" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-            <CheckBox Grid.Row="5" x:Name="Part3DCheck6" Content="Наличие скрытых объектов" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <CheckBox Grid.Row="5" x:Name="Part3DCheck6" Content="Наличие скрытых объектов" HorizontalAlignment="Left" VerticalAlignment="Top" Checked="Part3DCheck6_CheckedStateChanged" Unchecked="Part3DCheck6_CheckedStateChanged"/>
+            <CheckBox Grid.Row="5" x:Name="Part3DCheck61" Visibility="Hidden" Content="Проверять эскизы" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="200,0,0,0" Grid.RowSpan="2"/>
+            <CheckBox Grid.Row="5" x:Name="Part3DCheck62" Visibility="Hidden" Content="Проверять системы координат" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="400,0,0,0" Grid.RowSpan="2"/>
         </Grid>
     </Grid>
 </UserControl>

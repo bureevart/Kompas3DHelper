@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Kompas3DAutomation.CheckAssembly;
 
-namespace Kompas3DAutomation
+namespace Kompas3DAutomation.Checks.DrawingChecks
 {
     public class CheckDrawing : CheckBase
     {

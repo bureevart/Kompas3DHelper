@@ -11,5 +11,11 @@ namespace Kompas3DAutomation.Results
     {
         public CheckResults ResultType { get; set; }
         public string InnerResult { get; set; } = string.Empty;
+
+        public static CheckResult GetNoErrorsResult() => new CheckResult()
+        {
+            InnerResult = string.Empty,
+            ResultType = CheckResults.NoErrors,
+        };
     }
 }
