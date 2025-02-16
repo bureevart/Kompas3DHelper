@@ -24,7 +24,38 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
                 };
             }
 
-            throw new NotImplementedException();
+            try
+            {
+                var errors = new List<string>();
+                if (checks.HasFlag(DrawingChecks.NoHiddenObjects))
+                {
+                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresent(_kompasObject.Kompas, path))
+                        errors.Add("Ошибка наличия скрытых объектов");
+                }
+
+                if (errors.Count > 0)
+                {
+                    var error = string.Empty;
+                    foreach (var err in errors)
+                        error += err + " ";
+
+                    return new CheckResult()
+                    {
+                        ResultType = CheckResults.Error,
+                        InnerResult = error
+                    };
+                }
+
+                return CheckResult.GetNoErrorsResult();
+            }
+            catch (Exception ex)
+            {
+                return new CheckResult()
+                {
+                    ResultType = CheckResults.Error,
+                    InnerResult = $"Ошибка: {ex}"
+                };
+            }
         }
 
         /// <summary>
