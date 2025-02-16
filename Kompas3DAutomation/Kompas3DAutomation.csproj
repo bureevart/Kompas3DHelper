@@ -41,12 +41,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Checks\DrawingChecks\HiddenObjectsChecker.cs" />
     <Compile Include="Checks\Part3DChecks\CheckPart3D.cs" />
     <Compile Include="Checks\AssemblyChecks\CheckAssembly.cs" />
     <Compile Include="Checks\CheckBase.cs" />
     <Compile Include="Checks\DrawingChecks\CheckDrawing.cs" />
     <Compile Include="Checks\CheckTypes.cs" />
     <Compile Include="Checks\Part3DChecks\HiddenObjectsChecker.cs" />
+    <Compile Include="Checks\Part3DChecks\SelfIntersectChecker.cs" />
     <Compile Include="Checks\Part3DChecks\SingleSolidBodyChecker.cs" />
     <Compile Include="Results\CheckResult.cs" />
     <Compile Include="Results\CheckResultExtensions.cs" />

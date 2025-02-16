@@ -31,7 +31,7 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
 
                 if (checks.HasFlag(Part3DChecks.SelfIntersectionOfFaces))
                 {
-                    if (!CheckSelfIntersectionOfFaces())
+                    if (!SelfIntersectChecker.CheckSelfIntersectionOfFaces(_kompasObject.Kompas, path))
                         errors.Add("Ошибка самопересечения граней.");
                 }
 
@@ -94,13 +94,6 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
                     InnerResult = $"Ошибка: {ex}"
                 };
             }
-        }
-
-        public bool CheckSelfIntersectionOfFaces()
-        {
-            
-
-            return true;
         }
 
         public bool CheckSketchConstraints()

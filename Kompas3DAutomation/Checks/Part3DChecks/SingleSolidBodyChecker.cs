@@ -56,7 +56,18 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
         {
             if (f7.ResultBodies is object[] bodies)
             {
-                if (bodies.Length > 1) return false;
+                var cntSolid = 0;
+                foreach (Body7 body in bodies)
+                {
+                    cntSolid = body.IsSolid ? cntSolid + 1 : cntSolid;
+                    Console.WriteLine(body.Name + " IsSolid " + body.IsSolid);
+                }
+                if (cntSolid > 1) return false;
+
+            }
+            else if (f7.ResultBodies is IBody7 body)
+            {
+                Console.WriteLine(body.Name + "IsSolid" + body.IsSolid);
             }
 
             return true;
