@@ -42,6 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Checks\DrawingChecks\HiddenObjectsChecker.cs" />
+    <Compile Include="Checks\DrawingChecks\ManualTextDimensionChangesChecker.cs" />
+    <Compile Include="Checks\DrawingChecks\NoObjectsCrossingSheetBorderChecker.cs" />
+    <Compile Include="Checks\DrawingChecks\ViewIntegrityChecker.cs" />
     <Compile Include="Checks\Part3DChecks\CheckPart3D.cs" />
     <Compile Include="Checks\AssemblyChecks\CheckAssembly.cs" />
     <Compile Include="Checks\CheckBase.cs" />

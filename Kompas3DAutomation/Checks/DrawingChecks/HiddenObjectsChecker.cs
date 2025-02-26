@@ -11,7 +11,7 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
 {
     public class HiddenObjectsChecker
     {
-        public static bool CheckHiddenObjectsPresent(KompasObject kompasObject, string path, bool checkSketches = false, bool checkCoordinates = false)
+        public static bool CheckHiddenObjectsPresent(KompasObject kompasObject, string path)
         {
             IApplication app = (IApplication)kompasObject.ksGetApplication7();
 
@@ -46,7 +46,6 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
             {
                 doc2D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
             }
-
 
             return true;
         }
