@@ -76,6 +76,68 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
             }
         }
 
+        public CheckResult CheckForActiveDocument(DrawingChecks checks)
+        {
+            if (!_kompasObject.IsConnected)
+            {
+                return new CheckResult()
+                {
+                    ResultType = CheckResults.ConnectionError,
+                };
+            }
+
+            try
+            {
+                var errors = new List<string>();
+                if (checks.HasFlag(DrawingChecks.NoHiddenObjects))
+                {
+                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresentForActiveDocument(_kompasObject.Kompas))
+                        errors.Add("Ошибка наличия скрытых объектов");
+                }
+
+                if (checks.HasFlag(DrawingChecks.ViewIntegrity))
+                {
+                    if (!ViewIntegrityChecker.CheckViewIntegrityForActiveDocument(_kompasObject.Kompas))
+                        errors.Add("Ошибка целостности видов");
+                }
+
+                if (checks.HasFlag(DrawingChecks.NoObjectsOutsideDrawing))
+                {
+                    if (!NoObjectsCrossingSheetBorderChecker.CheckNoObjectsCrossingSheetBorderForActiveDocument(_kompasObject.Kompas))
+                        errors.Add("Ошибка наличия обьектов за пределами чертежа");
+                }
+
+                if (checks.HasFlag(DrawingChecks.ManualTextDimensionChanges))
+                {
+                    if (!ManualTextDimensionChangesChecker.CheckManualTextDimensionChangesForActiveDocument(_kompasObject.Kompas))
+                        errors.Add("Ошибка ручного изменения размера");
+                }
+
+                if (errors.Count > 0)
+                {
+                    var error = string.Empty;
+                    foreach (var err in errors)
+                        error += err + " ";
+
+                    return new CheckResult()
+                    {
+                        ResultType = CheckResults.Error,
+                        InnerResult = error
+                    };
+                }
+
+                return CheckResult.GetNoErrorsResult();
+            }
+            catch (Exception ex)
+            {
+                return new CheckResult()
+                {
+                    ResultType = CheckResults.Error,
+                    InnerResult = $"Ошибка: {ex}"
+                };
+            }
+        }
+
         /// <summary>
         /// Проверки для чертежей.
         /// </summary>

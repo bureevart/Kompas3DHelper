@@ -1,17 +1,18 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A85D342B-83F4-4AEC-BDD0-1B5CCB3817CF}</ProjectGuid>
+    <ProjectGuid>{68A0F7C6-CD38-436D-980E-980F8ED95337}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Kompas3DAutomation</RootNamespace>
-    <AssemblyName>Kompas3DAutomation</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <RootNamespace>KompasAutomationLibrary</RootNamespace>
+    <AssemblyName>KompasAutomationLibrary</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,25 +31,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
   <ItemGroup>
+    <Reference Include="KAPITypes">
+      <HintPath>..\..\..\..\..\..\Program Files\ASCON\KOMPAS-3D v23 Study\SDK\Samples\CSharp\Automation\KAPITypes.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -59,45 +45,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Checks\DrawingChecks\HiddenObjectsChecker.cs" />
-    <Compile Include="Checks\DrawingChecks\ManualTextDimensionChangesChecker.cs" />
-    <Compile Include="Checks\DrawingChecks\NoObjectsCrossingSheetBorderChecker.cs" />
-    <Compile Include="Checks\DrawingChecks\ViewIntegrityChecker.cs" />
-    <Compile Include="Checks\Part3DChecks\CheckPart3D.cs" />
-    <Compile Include="Checks\AssemblyChecks\CheckAssembly.cs" />
-    <Compile Include="Checks\CheckBase.cs" />
-    <Compile Include="Checks\DrawingChecks\CheckDrawing.cs" />
-    <Compile Include="Checks\CheckTypes.cs" />
-    <Compile Include="Checks\Part3DChecks\HiddenObjectsChecker.cs" />
-    <Compile Include="Checks\Part3DChecks\SelfIntersectChecker.cs" />
-    <Compile Include="Checks\Part3DChecks\SingleSolidBodyChecker.cs" />
-    <Compile Include="Results\CheckResult.cs" />
-    <Compile Include="Results\CheckResultExtensions.cs" />
-    <Compile Include="Results\CheckResults.cs" />
-    <Compile Include="KompasConnectionObject.cs" />
+    <Compile Include="DrawingChecks.cs" />
+    <Compile Include="Part3DChecks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Kompas6API5">
       <Guid>{0422828C-F174-495E-AC5D-D31014DBBE87}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="Kompas6Constants">
-      <Guid>{75C9F5D0-B5B8-4526-8681-9903C567D2ED}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
-    <COMReference Include="Kompas6Constants3D">
-      <Guid>{2CAF168C-7961-4B90-9DA2-701419BEEFE3}</Guid>
       <VersionMajor>1</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
@@ -123,6 +77,12 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Kompas3DAutomation\Kompas3DAutomation.csproj">
+      <Project>{A85D342B-83F4-4AEC-BDD0-1B5CCB3817CF}</Project>
+      <Name>Kompas3DAutomation</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
