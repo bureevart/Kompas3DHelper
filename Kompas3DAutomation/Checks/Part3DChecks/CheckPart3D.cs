@@ -96,6 +96,87 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
             }
         }
 
+        public CheckResult CheckForActiveDocument(Part3DChecks checks)
+        {
+            if (!_kompasObject.IsConnected)
+            {
+                return new CheckResult()
+                {
+                    ResultType = CheckResults.ConnectionError
+                };
+            }
+
+            try
+            {
+                var errors = new List<string>();
+
+                if (checks.HasFlag(Part3DChecks.SelfIntersectionOfFaces))
+                {
+                    if (!SelfIntersectChecker.CheckSelfIntersectionOfFacesForActiveDocument(_kompasObject.Kompas))
+                        errors.Add("Ошибка самопересечения граней.");
+                }
+
+                if (checks.HasFlag(Part3DChecks.SketchConstraints))
+                {
+                    if (!CheckSketchConstraints())
+                        errors.Add("Ошибка ограничений в эскизе.");
+                }
+
+                if (checks.HasFlag(Part3DChecks.LayeredObjectPosition))
+                {
+                    if (!CheckLayeredObjectPosition())
+                        errors.Add("Ошибка расположения объектов по слоям.");
+                }
+
+                if (checks.HasFlag(Part3DChecks.HiddenObjectsPresent))
+                {
+                    var checkSketches = !checks.HasFlag(Part3DChecks.DontCheckSketches);
+                    var checkCoordinates = !checks.HasFlag(Part3DChecks.DontCheckCoordinates);
+
+
+                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresentForActiveDocument(_kompasObject.Kompas,
+                        checkSketches: checkSketches,
+                        checkCoordinates: checkCoordinates))
+                        errors.Add("Ошибка наличия скрытых объектов");
+                }
+
+                if (checks.HasFlag(Part3DChecks.SingleSolidBody))
+                {
+                    if (!SingleSolidBodyChecker.CheckSingleSolidBodyForActiveDocument(_kompasObject.Kompas))
+                        errors.Add("Ошибка допуска наличия более одного твердого тела в файле модели.");
+                }
+
+                if (checks.HasFlag(Part3DChecks.ColorMatchesSpecification))
+                {
+                    if (!CheckColorMatchesSpecification())
+                        errors.Add("Ошибка несоответствия цвета модели.");
+                }
+
+                if (errors.Count > 0)
+                {
+                    var error = string.Empty;
+                    foreach (var err in errors)
+                        error += err + " ";
+
+                    return new CheckResult()
+                    {
+                        ResultType = CheckResults.Error,
+                        InnerResult = error
+                    };
+                }
+
+                return CheckResult.GetNoErrorsResult();
+            }
+            catch (Exception ex)
+            {
+                return new CheckResult()
+                {
+                    ResultType = CheckResults.Error,
+                    InnerResult = $"Ошибка: {ex}"
+                };
+            }
+        }
+
         public bool CheckSketchConstraints()
         {
 

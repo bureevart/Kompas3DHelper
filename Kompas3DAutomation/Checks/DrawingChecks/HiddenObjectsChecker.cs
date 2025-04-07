@@ -50,6 +50,44 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
             return true;
         }
 
+        public static bool CheckHiddenObjectsPresentForActiveDocument(KompasObject kompasObject)
+        {
+            IApplication app = (IApplication)kompasObject.ksGetApplication7();
+
+            if (app == null)
+            {
+                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
+            }
+
+            IKompasDocument2D doc2D = (IKompasDocument2D)app.ActiveDocument;
+
+            try
+            {
+                if (doc2D is null)
+                {
+                    throw new Exception("Документ не является 2D документом");
+                }
+
+                if (!CheckViewsAndLayersHidden(doc2D))
+                    return false;
+
+                if (!CheckLayersInLayerGroupsHidden(doc2D))
+                    return false;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw ex;
+            }
+            finally
+            {
+                //doc2D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
+            }
+
+            return true;
+        }
+
         private static bool CheckViewsAndLayersHidden(IKompasDocument2D doc2D)
         {
             var manager = doc2D.ViewsAndLayersManager;

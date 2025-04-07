@@ -27,6 +27,17 @@ namespace Kompas3DAutomation
 
             _isConnected = true;
         }
+
+        public void Connect(object kompas_)
+        {
+            _kompas = (KompasObject)kompas_;
+
+            if (_kompas == null)
+                throw new NullReferenceException();
+
+            _isConnected = true;
+        }
+
         public KompasObject Kompas => _kompas;
 
         public bool IsConnected => _isConnected;
