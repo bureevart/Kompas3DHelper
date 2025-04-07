@@ -10,8 +10,10 @@
         <Grid x:Name="AssemblyGrid" Margin="10,10,10,10">
             <Grid.RowDefinitions>
                 <RowDefinition></RowDefinition>
+                <RowDefinition></RowDefinition>
             </Grid.RowDefinitions>
             <CheckBox Grid.Row="0" x:Name="AssemblyCheck1" Content="Врезание деталей не допускается (анализ зазоров по сопряженным поверхностям)" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <CheckBox Grid.Row="1" x:Name="AssemblyCheck2" Content="Наличие скрытых объектов" HorizontalAlignment="Left" VerticalAlignment="Top"/>
         </Grid>
     </Grid>
 </UserControl>

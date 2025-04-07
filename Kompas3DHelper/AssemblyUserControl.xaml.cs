@@ -37,6 +37,8 @@ namespace Kompas3DHelper
                 AssemblyChecks checks = AssemblyChecks.None;
                 if (AssemblyCheck1.IsChecked == true)
                     checks |= AssemblyChecks.PartInterference;
+                if (AssemblyCheck2.IsChecked == true)
+                    checks |= AssemblyChecks.HiddenObjectsPresent;
                 return checks;
             }
         }
