@@ -1,117 +1,53 @@
-﻿using Kompas6API5;
-using KompasAPI7;
-using System;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Kompas6API5;
+using Kompas6Constants3D;
+using KompasAPI7;
+using Kompas3DAutomation.Checks;
+using Kompas3DAutomation.Results;
+using Kompas3DAutomation.Checks.DrawingChecks;
 
 namespace Kompas3DAutomation.Checks.Part3DChecks
 {
-    public class SingleSolidBodyChecker
+    internal sealed class SingleSolidBodyChecker : IChecker
     {
-        public static bool CheckSingleSolidBody(KompasObject kompasObject, string path)
+        private readonly KompasObject _kompas;
+        private readonly IKompasDocument3D _doc3D;
+
+        public SingleSolidBodyChecker(KompasObject kompas, IKompasDocument3D doc3D)
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
-
-            if (app == null)
-            {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            app.Documents.Open(path, true, true);
-            IKompasDocument3D doc3D = (IKompasDocument3D)app.ActiveDocument;
-
-            try
-            {
-                if (doc3D is null)
-                {
-                    throw new Exception("Документ не является 3D документом");
-                }
-
-
-                Part7 part7 = doc3D.TopPart;
-                if (part7 == null)
-                {
-                    throw new Exception("Не удалось получить интерфейс IPart7 из открытого документа.");
-                }
-
-                if (!CheckSingleBody((IFeature7)part7))
-                    return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                doc3D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-            return true;
+            _kompas = kompas;
+            _doc3D = doc3D;
         }
 
-        public static bool CheckSingleSolidBodyForActiveDocument(KompasObject kompasObject)
+        public IEnumerable<CheckViolation> Run()
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
+            var chooser = _doc3D.ChooseManager;
+            var part7 = _doc3D.TopPart;
+            var f7 = (IFeature7)part7;
 
-            if (app == null)
+            int count = 0;
+            object first = null;
+
+            if (f7.ResultBodies is IEnumerable bodies)
             {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
+                foreach (var o in bodies)
+                    if (o is IBody7 b && b.IsSolid)
+                    {
+                        if (count == 0) first = b;
+                        count++;
+                    }
             }
 
-            IKompasDocument3D doc3D = (IKompasDocument3D)app.ActiveDocument;
-
-            try
+            if (count > 1 && first != null)
             {
-                if (doc3D is null)
-                {
-                    throw new Exception("Документ не является 3D документом");
-                }
-
-
-                Part7 part7 = doc3D.TopPart;
-                if (part7 == null)
-                {
-                    throw new Exception("Не удалось получить интерфейс IPart7 из открытого документа.");
-                }
-
-                if (!CheckSingleBody((IFeature7)part7))
-                    return false;
+                yield return new CheckViolation(
+                    CheckName: nameof(CheckPart3D.Part3DChecks.SingleSolidBody),
+                    Message: $"Найдено {count} тел вместо одного",
+                    TargetObject: first,
+                    Highlighter: () => chooser.Choose(first)
+                );
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                //doc3D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-            return true;
-        }
-
-        private static bool CheckSingleBody(IFeature7 f7)
-        {
-            if (f7.ResultBodies is object[] bodies)
-            {
-                var cntSolid = 0;
-                foreach (Body7 body in bodies)
-                {
-                    cntSolid = body.IsSolid ? cntSolid + 1 : cntSolid;
-                    Console.WriteLine(body.Name + " IsSolid " + body.IsSolid);
-                }
-                if (cntSolid > 1) return false;
-
-            }
-            else if (f7.ResultBodies is IBody7 body)
-            {
-                Console.WriteLine(body.Name + "IsSolid" + body.IsSolid);
-            }
-
-            return true;
         }
     }
 }

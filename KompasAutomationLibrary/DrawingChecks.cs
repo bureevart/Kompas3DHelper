@@ -33,11 +33,11 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var drawingResult1 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.NoHiddenObjects);
-                    kompas.ksMessage($"Результат проверки: {drawingResult1.ResultType.GetMessage()} {drawingResult1.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {drawingResult1.ToString()}");
                     break;
                 case 2:
                     var drawingResult2 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.ManualTextDimensionChanges);
-                    kompas.ksMessage($"Результат проверки: {drawingResult2.ResultType.GetMessage()} {drawingResult2.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {drawingResult2.ToString()}");
                     break;
             }
         }

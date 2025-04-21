@@ -29,20 +29,20 @@ namespace KompasAutomationLibrary
             kompasConnectionObject.Connect(kompas_);
 
             var checkPart3D = new CheckPart3D(kompasConnectionObject);
-
+            
             switch (command)
             {
                 case 1:
                     var part3DResult1 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.HiddenObjectsPresent);
-                    kompas.ksMessage($"Результат проверки: {part3DResult1.ResultType.GetMessage()} {part3DResult1.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {part3DResult1.ToString()}");
                     break;
                 case 2:
                     var part3DResult2 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.SelfIntersectionOfFaces);
-                    kompas.ksMessage($"Результат проверки: {part3DResult2.ResultType.GetMessage()} {part3DResult2.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {part3DResult2.ToString()}");
                     break;
                 case 3:
                     var part3DResult3 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.SingleSolidBody);
-                    kompas.ksMessage($"Результат проверки: {part3DResult3.ResultType.GetMessage()} {part3DResult3.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {part3DResult3.ToString()}");
                     break;
             }
         }
@@ -66,7 +66,7 @@ namespace KompasAutomationLibrary
                     break;
                 case 3:
                     result = "Проверка на наличие более одного твердого тела";
-                    command = 2;
+                    command = 3;
                     break;
                 case 4:
                     itemType = 3;

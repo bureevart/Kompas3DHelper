@@ -1,5 +1,8 @@
 ﻿using Kompas3DAutomation.Checks;
 using Kompas3DAutomation.Results;
+using Kompas6API5;
+using Kompas6Constants;
+using KompasAPI7;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,134 +13,52 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
 {
     public class CheckDrawing : CheckBase
     {
-        public CheckDrawing(KompasConnectionObject kompasConnectionObject) : base(kompasConnectionObject)
-        {
-        }
+        public CheckDrawing(KompasConnectionObject kompasConnectionObject) : base(kompasConnectionObject) { }
 
-        public CheckResult Check(string path, DrawingChecks checks)
+        public CheckReport Check(string path, DrawingChecks checks)
         {
             if (!_kompasObject.IsConnected)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.ConnectionError,
-                };
+                return CheckReport.ConnectionError();
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            app.Documents.Open(path, true, true);
+            var doc2D = (IKompasDocument2D)app.ActiveDocument;
+
+            try 
+            { 
+                return RunChecks(doc2D, checks); 
             }
-
-            try
-            {
-                var errors = new List<string>();
-                if (checks.HasFlag(DrawingChecks.NoHiddenObjects))
-                {
-                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresent(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка наличия скрытых объектов");
-                }
-
-                if (checks.HasFlag(DrawingChecks.ViewIntegrity))
-                {
-                    if (!ViewIntegrityChecker.CheckViewIntegrity(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка целостности видов");
-                }
-
-                if (checks.HasFlag(DrawingChecks.NoObjectsOutsideDrawing))
-                {
-                    if (!NoObjectsCrossingSheetBorderChecker.CheckNoObjectsCrossingSheetBorder(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка наличия обьектов за пределами чертежа");
-                }
-
-                if (checks.HasFlag(DrawingChecks.ManualTextDimensionChanges))
-                {
-                    if (!ManualTextDimensionChangesChecker.CheckManualTextDimensionChanges(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка ручного изменения размера");
-                }
-
-                if (errors.Count > 0)
-                {
-                    var error = string.Empty;
-                    foreach (var err in errors)
-                        error += err + " ";
-
-                    return new CheckResult()
-                    {
-                        ResultType = CheckResults.Error,
-                        InnerResult = error
-                    };
-                }
-
-                return CheckResult.GetNoErrorsResult();
-            }
-            catch (Exception ex)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.Error,
-                    InnerResult = $"Ошибка: {ex}"
-                };
+            finally 
+            { 
+                doc2D.Close(DocumentCloseOptions.kdDoNotSaveChanges); 
             }
         }
 
-        public CheckResult CheckForActiveDocument(DrawingChecks checks)
+        public CheckReport CheckForActiveDocument(DrawingChecks checks)
         {
             if (!_kompasObject.IsConnected)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.ConnectionError,
-                };
-            }
+                return CheckReport.ConnectionError();
 
-            try
-            {
-                var errors = new List<string>();
-                if (checks.HasFlag(DrawingChecks.NoHiddenObjects))
-                {
-                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresentForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка наличия скрытых объектов");
-                }
-
-                if (checks.HasFlag(DrawingChecks.ViewIntegrity))
-                {
-                    if (!ViewIntegrityChecker.CheckViewIntegrityForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка целостности видов");
-                }
-
-                if (checks.HasFlag(DrawingChecks.NoObjectsOutsideDrawing))
-                {
-                    if (!NoObjectsCrossingSheetBorderChecker.CheckNoObjectsCrossingSheetBorderForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка наличия обьектов за пределами чертежа");
-                }
-
-                if (checks.HasFlag(DrawingChecks.ManualTextDimensionChanges))
-                {
-                    if (!ManualTextDimensionChangesChecker.CheckManualTextDimensionChangesForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка ручного изменения размера");
-                }
-
-                if (errors.Count > 0)
-                {
-                    var error = string.Empty;
-                    foreach (var err in errors)
-                        error += err + " ";
-
-                    return new CheckResult()
-                    {
-                        ResultType = CheckResults.Error,
-                        InnerResult = error
-                    };
-                }
-
-                return CheckResult.GetNoErrorsResult();
-            }
-            catch (Exception ex)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.Error,
-                    InnerResult = $"Ошибка: {ex}"
-                };
-            }
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var doc2D = (IKompasDocument2D?)app.ActiveDocument ?? throw new InvalidOperationException("Нет активного 2D‑документа");
+            return RunChecks(doc2D, checks);
         }
 
+        private CheckReport RunChecks(IKompasDocument2D doc2D, DrawingChecks checks)
+        {
+            var report = new CheckReport();
+            void Add(IChecker ch) => report.Violations.AddRange(ch.Run());
+
+            if (checks.HasFlag(DrawingChecks.NoHiddenObjects))
+                Add(new HiddenObjectsChecker(_kompasObject.Kompas, doc2D));
+
+            if (checks.HasFlag(DrawingChecks.ManualTextDimensionChanges))
+                Add(new ManualTextDimensionChangesChecker(_kompasObject.Kompas, doc2D));
+
+            return report;
+        }
+
+        #region CheckTypes
         /// <summary>
         /// Проверки для чертежей.
         /// </summary>
@@ -170,5 +91,6 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
             /// </summary>
             ManualTextDimensionChanges = 1 << 5
         }
+        #endregion
     }
 }

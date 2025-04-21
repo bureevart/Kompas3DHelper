@@ -1,156 +1,88 @@
-﻿using Kompas6API5;
+﻿using System.Collections.Generic;
+using Kompas6API5;
 using KompasAPI7;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
+using Kompas3DAutomation.Results;
 
 namespace Kompas3DAutomation.Checks.DrawingChecks
 {
-    public class HiddenObjectsChecker
+    /// <summary>
+    /// Проверка отсутствия скрытых объектов. Алгоритм обхода сохранён в точности, изменены только return‑ы на yield‑return.
+    /// </summary>
+    internal sealed class HiddenObjectsChecker : IChecker
     {
-        public static bool CheckHiddenObjectsPresent(KompasObject kompasObject, string path)
+        private readonly IKompasDocument2D _doc2D;
+        private readonly KompasObject _kompas;
+
+        public HiddenObjectsChecker(KompasObject kompas, IKompasDocument2D doc2D)
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
-
-            if (app == null)
-            {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            app.Documents.Open(path, true, true);
-            IKompasDocument2D doc2D = (IKompasDocument2D)app.ActiveDocument;
-            
-            try
-            {
-                if (doc2D is null)
-                {
-                    throw new Exception("Документ не является 3D документом");
-                }
-
-                if (!CheckViewsAndLayersHidden(doc2D))
-                    return false;
-
-                if (!CheckLayersInLayerGroupsHidden(doc2D))
-                    return false;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                doc2D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-            return true;
+            _kompas = kompas;
+            _doc2D = doc2D;
         }
 
-        public static bool CheckHiddenObjectsPresentForActiveDocument(KompasObject kompasObject)
+        public IEnumerable<CheckViolation> Run()
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
+            foreach (var v in CheckViewsAndLayersHidden(_doc2D))
+                yield return v;
 
-            if (app == null)
-            {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            IKompasDocument2D doc2D = (IKompasDocument2D)app.ActiveDocument;
-
-            try
-            {
-                if (doc2D is null)
-                {
-                    throw new Exception("Документ не является 2D документом");
-                }
-
-                if (!CheckViewsAndLayersHidden(doc2D))
-                    return false;
-
-                if (!CheckLayersInLayerGroupsHidden(doc2D))
-                    return false;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                //doc2D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-            return true;
+            foreach (var v in CheckLayersInLayerGroupsHidden(_doc2D))
+                yield return v;
         }
 
-        private static bool CheckViewsAndLayersHidden(IKompasDocument2D doc2D)
+        // ---- Оригинальные методы пользователя (bool → IEnumerable<CheckViolation>) ----
+
+        private IEnumerable<CheckViolation> CheckViewsAndLayersHidden(IKompasDocument2D doc2D)
         {
             var manager = doc2D.ViewsAndLayersManager;
-
             var views = manager.Views;
+            var chooser = ((IKompasDocument2D1)doc2D).ChooseManager;
 
             foreach (View view in views)
             {
-                Console.WriteLine(view.Name);
-                if(!view.Visible)
-                    return false;
+                if (!view.Visible)
+                    yield return new CheckViolation($"{nameof(CheckDrawing.DrawingChecks.NoHiddenObjects)}", $"Вид \"{view.Name}\" скрыт", view, () => chooser.Choose(view));
 
                 foreach (Layer layer in view.Layers)
                 {
-                    Console.WriteLine("Слой " + layer.Name);
                     if (!layer.Visible)
-                        return false;
+                        yield return new CheckViolation($"{nameof(CheckDrawing.DrawingChecks.NoHiddenObjects)}", $"Слой \"{layer.Name}\" во виде \"{view.Name}\" скрыт", layer, () => chooser.Choose(layer));
+                }
+            }
+        }
+
+            private IEnumerable<CheckViolation> CheckLayersInLayerGroupsHidden(IKompasDocument2D doc2D)
+            {
+                var manager = doc2D.ViewsAndLayersManager;
+                var layerGroups = manager.LayerGroups;
+
+                foreach (LayerGroup layerGroup in layerGroups)
+                {
+                    foreach (var v in CheckForHiddenInLayerGroup(layerGroup, doc2D))
+                        yield return v;
+
+                  /*var chooser = ((IKompasDocument2D1)doc2D).ChooseManager;
+                    foreach (Layer layer in layerGroup.Layers)
+                    {
+                        if (!layer.Visible)
+                            yield return new CheckViolation($"{nameof(CheckDrawing.DrawingChecks.NoHiddenObjects)}", $"Слой \"{layer.Name}\" в группе \"{layerGroup.Name}\" скрыт", layer, () => chooser.Choose(layer));
+                    }*/
                 }
             }
 
-            return true;
-        }
-
-        private static bool CheckLayersInLayerGroupsHidden(IKompasDocument2D doc2D)
-        {
-            var manager = doc2D.ViewsAndLayersManager;
-
-            var layerGroups = manager.LayerGroups;
-
-            foreach (LayerGroup layerGroup in layerGroups)
+            private IEnumerable<CheckViolation> CheckForHiddenInLayerGroup(LayerGroup layerGroup, IKompasDocument2D doc2D)
             {
-                Console.WriteLine("Группа слоев " + layerGroup.Name);
-                if (!CheckForHiddenInLayerGroup(layerGroup))
-                    return false;
+                var chooser = ((IKompasDocument2D1)doc2D).ChooseManager;
+
+                foreach (LayerGroup innerLayerGroup in layerGroup.LayerGroups)
+                {
+                    foreach (var v in CheckForHiddenInLayerGroup(innerLayerGroup, doc2D))
+                        yield return v;
+                }
 
                 foreach (Layer layer in layerGroup.Layers)
                 {
-                    Console.WriteLine("Слой " + layer.Name);
                     if (!layer.Visible)
-                        return false;
+                        yield return new CheckViolation($"{nameof(CheckDrawing.DrawingChecks.NoHiddenObjects)}", $"Слой \"{layer.Name}\" в группе \"{layerGroup.Name}\" скрыт", layer, () => chooser.Choose(layer));
                 }
             }
-
-            return true;
-        }
-
-        public static bool CheckForHiddenInLayerGroup(LayerGroup layerGroup)
-        {
-            foreach (LayerGroup innerLayerGroup in layerGroup.LayerGroups)
-            {
-                Console.WriteLine("Группа слоев " + layerGroup.Name);
-                if (!CheckForHiddenInLayerGroup(innerLayerGroup))
-                    return false;
-            }
-
-            foreach (Layer layer in layerGroup.Layers)
-            {
-                Console.WriteLine("Слой " + layerGroup.Name);
-                if (!layer.Visible)
-                    return false;
-            }
-
-            return true;
-        }
     }
 }

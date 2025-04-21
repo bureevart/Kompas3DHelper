@@ -1,4 +1,5 @@
 ﻿using Kompas3DAutomation.Checks;
+using Kompas3DAutomation.Checks.DrawingChecks;
 using Kompas3DAutomation.Results;
 using Kompas6API5;
 using Kompas6Constants;
@@ -11,192 +12,67 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
 {
     public class CheckPart3D : CheckBase
     {
-        public CheckPart3D(KompasConnectionObject kompasConnectionObject) : base(kompasConnectionObject)
-        {
-        }
+        public CheckPart3D(KompasConnectionObject kompasConnectionObject)
+            : base(kompasConnectionObject) { }
 
-        public CheckResult Check(string path, Part3DChecks checks)
+        public CheckReport Check(string path, Part3DChecks checks)
         {
             if (!_kompasObject.IsConnected)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.ConnectionError
-                };
-            }
+                return CheckReport.ConnectionError();
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            app.Documents.Open(path, true, true);
+            var doc3D = (IKompasDocument3D)app.ActiveDocument;
 
             try
             {
-                var errors = new List<string>();
-
-                if (checks.HasFlag(Part3DChecks.SelfIntersectionOfFaces))
-                {
-                    if (!SelfIntersectChecker.CheckSelfIntersectionOfFaces(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка самопересечения граней.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.SketchConstraints))
-                {
-                    if (!CheckSketchConstraints())
-                        errors.Add("Ошибка ограничений в эскизе.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.LayeredObjectPosition))
-                {
-                    if (!CheckLayeredObjectPosition())
-                        errors.Add("Ошибка расположения объектов по слоям.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.HiddenObjectsPresent))
-                {
-                    var checkSketches = !checks.HasFlag(Part3DChecks.DontCheckSketches);
-                    var checkCoordinates = !checks.HasFlag(Part3DChecks.DontCheckCoordinates);
-
-                    
-                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresent(_kompasObject.Kompas, path, 
-                        checkSketches: checkSketches, 
-                        checkCoordinates: checkCoordinates))
-                        errors.Add("Ошибка наличия скрытых объектов");
-                }
-
-                if (checks.HasFlag(Part3DChecks.SingleSolidBody))
-                {
-                    if (!SingleSolidBodyChecker.CheckSingleSolidBody(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка допуска наличия более одного твердого тела в файле модели.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.ColorMatchesSpecification))
-                {
-                    if (!CheckColorMatchesSpecification())
-                        errors.Add("Ошибка несоответствия цвета модели.");
-                }
-
-                if (errors.Count > 0)
-                {
-                    var error = string.Empty;
-                    foreach (var err in errors)
-                        error += err + " ";
-
-                    return new CheckResult()
-                    {
-                        ResultType = CheckResults.Error,
-                        InnerResult = error
-                    };
-                }
-
-                return CheckResult.GetNoErrorsResult();
+                return RunChecks(doc3D, checks);
             }
-            catch (Exception ex)
+            finally
             {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.Error,
-                    InnerResult = $"Ошибка: {ex}"
-                };
+                doc3D.Close(DocumentCloseOptions.kdDoNotSaveChanges);
             }
         }
 
-        public CheckResult CheckForActiveDocument(Part3DChecks checks)
+        public CheckReport CheckForActiveDocument(Part3DChecks checks)
         {
             if (!_kompasObject.IsConnected)
+                return CheckReport.ConnectionError();
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var doc3D = app.ActiveDocument as IKompasDocument3D
+                      ?? throw new InvalidOperationException("Нет активного 3D‑документа.");
+            return RunChecks(doc3D, checks);
+        }
+
+        private CheckReport RunChecks(IKompasDocument3D doc3D, Part3DChecks checks)
+        {
+            var report = new CheckReport();
+            void Add(IChecker c) => report.Violations.AddRange(c.Run());
+
+            if (checks.HasFlag(Part3DChecks.SelfIntersectionOfFaces))
+                Add(new SelfIntersectChecker(_kompasObject.Kompas, doc3D));
+
+            if (checks.HasFlag(Part3DChecks.HiddenObjectsPresent))
             {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.ConnectionError
-                };
+                var checkSketches = !checks.HasFlag(Part3DChecks.DontCheckSketches);
+                var checkCoordinates = !checks.HasFlag(Part3DChecks.DontCheckCoordinates);
+                Add(new HiddenObjectsChecker(
+                    _kompasObject.Kompas,
+                    doc3D,
+                    checkSketches,
+                    checkCoordinates));
             }
 
-            try
-            {
-                var errors = new List<string>();
+            if (checks.HasFlag(Part3DChecks.SingleSolidBody))
+                Add(new SingleSolidBodyChecker(_kompasObject.Kompas, doc3D));
 
-                if (checks.HasFlag(Part3DChecks.SelfIntersectionOfFaces))
-                {
-                    if (!SelfIntersectChecker.CheckSelfIntersectionOfFacesForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка самопересечения граней.");
-                }
+            // TODO: при необходимости добавить SketchConstraints, ColorMatchesSpecification, LayeredObjectPosition
 
-                if (checks.HasFlag(Part3DChecks.SketchConstraints))
-                {
-                    if (!CheckSketchConstraints())
-                        errors.Add("Ошибка ограничений в эскизе.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.LayeredObjectPosition))
-                {
-                    if (!CheckLayeredObjectPosition())
-                        errors.Add("Ошибка расположения объектов по слоям.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.HiddenObjectsPresent))
-                {
-                    var checkSketches = !checks.HasFlag(Part3DChecks.DontCheckSketches);
-                    var checkCoordinates = !checks.HasFlag(Part3DChecks.DontCheckCoordinates);
-
-
-                    if (!HiddenObjectsChecker.CheckHiddenObjectsPresentForActiveDocument(_kompasObject.Kompas,
-                        checkSketches: checkSketches,
-                        checkCoordinates: checkCoordinates))
-                        errors.Add("Ошибка наличия скрытых объектов");
-                }
-
-                if (checks.HasFlag(Part3DChecks.SingleSolidBody))
-                {
-                    if (!SingleSolidBodyChecker.CheckSingleSolidBodyForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка допуска наличия более одного твердого тела в файле модели.");
-                }
-
-                if (checks.HasFlag(Part3DChecks.ColorMatchesSpecification))
-                {
-                    if (!CheckColorMatchesSpecification())
-                        errors.Add("Ошибка несоответствия цвета модели.");
-                }
-
-                if (errors.Count > 0)
-                {
-                    var error = string.Empty;
-                    foreach (var err in errors)
-                        error += err + " ";
-
-                    return new CheckResult()
-                    {
-                        ResultType = CheckResults.Error,
-                        InnerResult = error
-                    };
-                }
-
-                return CheckResult.GetNoErrorsResult();
-            }
-            catch (Exception ex)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.Error,
-                    InnerResult = $"Ошибка: {ex}"
-                };
-            }
+            return report;
         }
 
-        public bool CheckSketchConstraints()
-        {
-
-
-            return true;
-        }
-
-        public bool CheckLayeredObjectPosition()
-        {
-
-
-            return true;
-        }
-
-        public bool CheckColorMatchesSpecification( )
-        {
-
-
-            return true;
-        }
+        #region CheckTypes
 
         /// <summary>
         /// Проверки для модели деталей.
@@ -238,5 +114,6 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
             /// </summary>
             DontCheckCoordinates = 1 << 7,
         }
+        #endregion
     }
 }

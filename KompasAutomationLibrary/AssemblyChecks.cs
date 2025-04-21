@@ -37,11 +37,11 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var assemblyResult1 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.PartInterference);
-                    kompas.ksMessage($"Результат проверки: {assemblyResult1.ResultType.GetMessage()} {assemblyResult1.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {assemblyResult1.ToString()}");
                     break;
                 case 2:
                     var assemblyResult2 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.HiddenObjectsPresent);
-                    kompas.ksMessage($"Результат проверки: {assemblyResult2.ResultType.GetMessage()} {assemblyResult2.InnerResult}");
+                    kompas.ksMessage($"Результат проверки: {assemblyResult2.ToString()}");
                     break;
             }
         }
