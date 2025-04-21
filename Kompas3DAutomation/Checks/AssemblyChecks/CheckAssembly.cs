@@ -75,6 +75,18 @@ namespace Kompas3DAutomation.Checks.AssemblyChecks
             return report;
         }
 
+        public bool ClearHighlightForActiveDocument()
+        {
+            if (!_kompasObject.IsConnected)
+                return false;
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var asmDoc = app.ActiveDocument as IAssemblyDocument
+                      ?? throw new InvalidOperationException("Нет активного Сборочного чертежа.");
+
+            return asmDoc.ChooseManager.UnchooseAll();
+        }
+
         #region CheckTypes
         /// <summary>
         /// Проверки для моделей СЕ (сборочной единицы).

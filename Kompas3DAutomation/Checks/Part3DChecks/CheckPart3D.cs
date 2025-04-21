@@ -72,6 +72,18 @@ namespace Kompas3DAutomation.Checks.Part3DChecks
             return report;
         }
 
+        public bool ClearHighlightForActiveDocument()
+        {
+            if (!_kompasObject.IsConnected)
+                return false;
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var doc3D = app.ActiveDocument as IKompasDocument3D
+                      ?? throw new InvalidOperationException("Нет активного 3D‑документа.");
+
+            return doc3D.ChooseManager.UnchooseAll();
+        }
+
         #region CheckTypes
 
         /// <summary>

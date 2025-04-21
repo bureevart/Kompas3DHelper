@@ -58,6 +58,18 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
             return report;
         }
 
+        public bool ClearHighlightForActiveDocument()
+        {
+            if (!_kompasObject.IsConnected)
+                return false;
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var doc2D = app.ActiveDocument as IKompasDocument2D
+                      ?? throw new InvalidOperationException("Нет активного 2D‑документа.");
+
+            return (doc2D as IKompasDocument2D1).ChooseManager.UnchooseAll();
+        }
+
         #region CheckTypes
         /// <summary>
         /// Проверки для чертежей.
