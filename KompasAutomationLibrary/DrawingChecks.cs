@@ -34,21 +34,11 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var drawingResult1 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.NoHiddenObjects);
-                    //kompas.ksMessage($"Результат проверки: {drawingResult1.ToString()}");
-                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult1);
-                    //if (drawingResult1.HasErrors && kompas.ksYesNo("Подсветить ошибки?") == 1)
-                    //{
-                    //    drawingResult1.Violations.ForEach(err => err.Highlighter.Invoke());
-                    //}
+                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult1, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 2:
                     var drawingResult2 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.ManualTextDimensionChanges);
-                    //kompas.ksMessage($"Результат проверки: {drawingResult2.ToString()}");
-                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult2);
-                    //if (drawingResult2.HasErrors && kompas.ksYesNo("Подсветить ошибки?") == 1)
-                    //{
-                    //    drawingResult2.Violations.ForEach(err => err.Highlighter.Invoke());
-                    //}
+                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult2, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 3:
                     checkDrawing.ClearHighlightForActiveDocument();

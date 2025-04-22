@@ -14,13 +14,14 @@ namespace KompasAutomationLibrary
         public NativeWindowWrapper(IntPtr handle) { Handle = handle; }
         public IntPtr Handle { get; }
 
-        public static void ShowReportWinForms(KompasObject kompas, CheckReport rpt)
+        public static void ShowReportWinForms(KompasObject kompas, CheckReport rpt, Action clearHighlight)
         {
             var form = new CheckReportForm();
+            form.ClearHighlightAction = clearHighlight;
+
             form.Bind(rpt);
             form.Show(GetKompasMainHwnd(kompas));
         }
-
 
         public static IWin32Window GetKompasMainHwnd(KompasObject kompas)
         {
