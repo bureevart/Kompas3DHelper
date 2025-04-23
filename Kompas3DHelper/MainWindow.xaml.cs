@@ -95,7 +95,7 @@ namespace Kompas3DHelper
                         AssemblyChecks assemblyChecks = assemblyControl.SelectedAssemblyChecks;
                         var checkAssembly = new CheckAssembly(KompasConnectionObject);
                         var assemblyResult = checkAssembly.Check(ViewModel.SelectedFilePath, assemblyChecks);
-                        MessageBox.Show(assemblyResult.ResultType.GetMessage());
+                        MessageBox.Show(assemblyResult.ToString());
                     }
                     break;
                 case CheckTypes.Drawing:
@@ -104,7 +104,7 @@ namespace Kompas3DHelper
                         DrawingChecks drawingChecks = drawingControl.SelectedDrawingChecks;
                         var checkDrawing = new CheckDrawing(KompasConnectionObject);
                         var drawingResult = checkDrawing.Check(ViewModel.SelectedFilePath, drawingChecks);
-                        MessageBox.Show(drawingResult.ResultType.GetMessage());
+                        MessageBox.Show(drawingResult.ToString());
                     }
                     break;
                 case CheckTypes.Part3D:
@@ -113,7 +113,7 @@ namespace Kompas3DHelper
                         Part3DChecks part3DChecks = part3DControl.SelectedPartModelChecks;
                         var checkPart3D = new CheckPart3D(KompasConnectionObject);
                         var part3DResult = checkPart3D.Check(ViewModel.SelectedFilePath, part3DChecks);
-                        MessageBox.Show(part3DResult.ResultType.GetMessage());
+                        MessageBox.Show(part3DResult.ToString());
                     }
                     break;
                 case CheckTypes.Other:

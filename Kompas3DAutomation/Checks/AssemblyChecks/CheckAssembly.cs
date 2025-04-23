@@ -1,6 +1,9 @@
 ﻿using Kompas3DAutomation.Checks;
+using Kompas3DAutomation.Checks.DrawingChecks;
 using Kompas3DAutomation.Checks.Part3DChecks;
 using Kompas3DAutomation.Results;
+using Kompas6Constants;
+using KompasAPI7;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,112 +15,79 @@ namespace Kompas3DAutomation.Checks.AssemblyChecks
 {
     public class CheckAssembly : CheckBase
     {
-        public CheckAssembly(KompasConnectionObject kompasConnectionObject) : base(kompasConnectionObject)
-        {
-        }
+        public CheckAssembly(KompasConnectionObject kompasConnectionObject)
+            : base(kompasConnectionObject) { }
 
-        public CheckResult Check(string path, AssemblyChecks checks)
+        /// <summary>
+        /// Проверяет сборку по пути (открывает/закрывает документ).
+        /// </summary>
+        public CheckReport Check(string path, AssemblyChecks checks)
         {
             if (!_kompasObject.IsConnected)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.ConnectionError,
-                };
-            }
+                return CheckReport.ConnectionError();
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            app.Documents.Open(path, true, true);
+            var asmDoc = (IAssemblyDocument)app.ActiveDocument;
 
             try
             {
-                var errors = new List<string>();
-
-                if (checks.HasFlag(AssemblyChecks.PartInterference))
-                {
-                    if (!PartInterferenceChecker.CheckPartInterference(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка самопересечения граней.");
-                }
-
-                if (checks.HasFlag(AssemblyChecks.HiddenObjectsPresent))
-                {
-                    if (!HiddenObjectsChecker.CheckHiddenObjects(_kompasObject.Kompas, path))
-                        errors.Add("Ошибка наличия скрытых компонентов.");
-                }
-
-                if (errors.Count > 0)
-                {
-                    var error = string.Empty;
-                    foreach (var err in errors)
-                        error += err + " ";
-
-                    return new CheckResult()
-                    {
-                        ResultType = CheckResults.Error,
-                        InnerResult = error
-                    };
-                }
-
-                return CheckResult.GetNoErrorsResult();
+                return RunChecks(asmDoc, checks);
             }
-            catch (Exception ex)
+            finally
             {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.Error,
-                    InnerResult = $"Ошибка: {ex}"
-                };
+                asmDoc.Close(DocumentCloseOptions.kdDoNotSaveChanges);
             }
         }
 
-        public CheckResult CheckForActiveDocument(AssemblyChecks checks)
+        /// <summary>
+        /// Проверяет уже открытый активный документ‑сборку.
+        /// </summary>
+        public CheckReport CheckForActiveDocument(AssemblyChecks checks)
         {
             if (!_kompasObject.IsConnected)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.ConnectionError,
-                };
-            }
+                return CheckReport.ConnectionError();
 
-            try
-            {
-                var errors = new List<string>();
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var active = app.ActiveDocument as IAssemblyDocument;
+            if (active == null)
+                throw new InvalidOperationException("Нет активного 3D‑документа сборки.");
 
-                if (checks.HasFlag(AssemblyChecks.PartInterference))
-                {
-                    if (!PartInterferenceChecker.CheckPartInterferenceForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка самопересечения граней.");
-                }
-
-                if (checks.HasFlag(AssemblyChecks.HiddenObjectsPresent))
-                {
-                    if (!HiddenObjectsChecker.CheckHiddenObjectsForActiveDocument(_kompasObject.Kompas))
-                        errors.Add("Ошибка наличия скрытых компонентов.");
-                }
-
-                if (errors.Count > 0)
-                {
-                    var error = string.Empty;
-                    foreach (var err in errors)
-                        error += err + " ";
-
-                    return new CheckResult()
-                    {
-                        ResultType = CheckResults.Error,
-                        InnerResult = error
-                    };
-                }
-
-                return CheckResult.GetNoErrorsResult();
-            }
-            catch (Exception ex)
-            {
-                return new CheckResult()
-                {
-                    ResultType = CheckResults.Error,
-                    InnerResult = $"Ошибка: {ex}"
-                };
-            }
+            return RunChecks(active, checks);
         }
 
+        /// <summary>
+        /// Бежим по всем чекерам‑модулям.
+        /// </summary>
+        private CheckReport RunChecks(IAssemblyDocument asmDoc, AssemblyChecks checks)
+        {
+            var report = new CheckReport();
+
+            // локальный добавлятор для любого IChecker
+            void Add(IChecker ch) => report.Violations.AddRange(ch.Run());
+
+            //if (checks.HasFlag(AssemblyChecks.PartInterference))
+            //    Add(new PartInterferenceChecker(_kompasObject.Kompas, asmDoc));
+
+            if (checks.HasFlag(AssemblyChecks.HiddenObjectsPresent))
+                Add(new HiddenObjectsChecker(_kompasObject.Kompas, asmDoc));
+
+            return report;
+        }
+
+        public bool ClearHighlightForActiveDocument()
+        {
+            if (!_kompasObject.IsConnected)
+                return false;
+
+            var app = (IApplication)_kompasObject.Kompas.ksGetApplication7();
+            var asmDoc = app.ActiveDocument as IAssemblyDocument
+                      ?? throw new InvalidOperationException("Нет активного Сборочного чертежа.");
+
+            return asmDoc.ChooseManager.UnchooseAll();
+        }
+
+        #region CheckTypes
         /// <summary>
         /// Проверки для моделей СЕ (сборочной единицы).
         /// </summary>
@@ -134,5 +104,6 @@ namespace Kompas3DAutomation.Checks.AssemblyChecks
             /// </summary>
             HiddenObjectsPresent = 1 << 1
         }
+        #endregion
     }
 }

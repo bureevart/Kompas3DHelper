@@ -1,161 +1,77 @@
-﻿using Kompas6API5;
-using KompasAPI7;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Kompas6API5;
+using KompasAPI7;
+using Kompas3DAutomation.Results;
 
 namespace Kompas3DAutomation.Checks.DrawingChecks
 {
-    public class ManualTextDimensionChangesChecker
+    /// <summary>
+    /// Проверка ручного изменения текста размеров.
+    /// Логика обхода сохранена, заменены только ранние return → yield return.
+    /// </summary>
+    internal sealed class ManualTextDimensionChangesChecker : IChecker
     {
-        public static bool CheckManualTextDimensionChanges(KompasObject kompasObject, string path)
+        private readonly KompasObject _kompas;
+        private readonly IKompasDocument2D _doc2D;
+
+        public ManualTextDimensionChangesChecker(KompasObject kompas, IKompasDocument2D doc2D)
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
-
-            if (app == null)
-            {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            app.Documents.Open(path, true, true);
-            IKompasDocument2D doc2D = (IKompasDocument2D)app.ActiveDocument;
-
-            try
-            {
-                if (doc2D is null)
-                {
-                    throw new Exception("Документ не является 3D документом");
-                }
-
-                if (!CheckManualTextDimensionChanges(doc2D))
-                    return false;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                doc2D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-            return true;
+            _kompas = kompas;
+            _doc2D = doc2D;
         }
 
-        public static bool CheckManualTextDimensionChangesForActiveDocument(KompasObject kompasObject)
+        public IEnumerable<CheckViolation> Run()
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
-
-            if (app == null)
-            {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            IKompasDocument2D doc2D = (IKompasDocument2D)app.ActiveDocument;
-
-            try
-            {
-                if (doc2D is null)
-                {
-                    throw new Exception("Документ не является 2D документом");
-                }
-
-                if (!CheckManualTextDimensionChanges(doc2D))
-                    return false;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                //doc2D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-            return true;
+            foreach (var v in CheckManualTextDimensionChanges(_doc2D))
+                yield return v;
         }
 
-        private static bool CheckManualTextDimensionChanges(IKompasDocument2D doc2D)
+        private IEnumerable<CheckViolation> CheckManualTextDimensionChanges(IKompasDocument2D doc2D)
         {
-            var manager = doc2D.ViewsAndLayersManager;
-
-            var views = manager.Views;
-            var layoutSheets = doc2D.LayoutSheets;
-
+            var chooser = ((IKompasDocument2D1)doc2D).ChooseManager;
+            var views = doc2D.ViewsAndLayersManager.Views;
 
             foreach (IView view in views)
             {
-                Console.WriteLine(view.Name);
+                ISymbols2DContainer c = (ISymbols2DContainer)view;
 
-                var x = view.X;
-                var y = view.Y;
+                // Пробег по всем коллекциям размеров
+                foreach (var v in EmitIfManual(c.AngleDimensions, "Угловой размер", chooser)) yield return v;
+                foreach (var v in EmitIfManual(c.ArcDimensions, "Дуговой размер", chooser)) yield return v;
+                foreach (var v in EmitIfManual(c.BreakLineDimensions, "Ломаный размер", chooser)) yield return v;
+                foreach (var v in EmitIfManual(c.DiametralDimensions, "Диаметральный размер", chooser)) yield return v;
+                foreach (var v in EmitIfManual(c.HeightDimensions, "Высотный размер", chooser)) yield return v;
+                foreach (var v in EmitIfManual(c.LineDimensions, "Линейный размер", chooser)) yield return v;
+                foreach (var v in EmitIfManual(c.RadialDimensions, "Радиальный размер", chooser)) yield return v;
+            }
+        }
 
-                ISymbols2DContainer symbols2DContainer = (ISymbols2DContainer)view;
-
-                foreach (IDimensionText item in symbols2DContainer.AngleDimensions)
+        /// <summary>
+        /// Перебирает любую COM‑коллекцию размеров (не только IEnumerable<IDimensionText>)
+        /// </summary>
+        private IEnumerable<CheckViolation> EmitIfManual(
+            object dimsCollection,
+            string kind,
+            dynamic chooser)
+        {
+            if (dimsCollection is IEnumerable dims)
+            {
+                foreach (var item in dims)
                 {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.ArcDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.BreakLineDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.DiametralDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.HeightDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.LineDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.RadialDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
-                }
-
-                foreach (IDimensionText item in symbols2DContainer.BreakLineDimensions)
-                {
-                    Console.WriteLine("Действительное значение: " + item.NominalValue);
-                    Console.WriteLine("Действительный текст: " + item.NominalText.Str + "\n");
-                    if (!item.AutoNominalValue) return false;
+                    var d = (IDimensionText)item;
+                    if (!d.AutoNominalValue)
+                    {
+                        yield return new CheckViolation(
+                            CheckName: $"{nameof(CheckDrawing.DrawingChecks.ManualTextDimensionChanges)}",
+                            Message: $"{kind}: ручной текст «{d.NominalText.Str}» Номинальное значение: {d.NominalValue}",
+                            TargetObject: d,
+                            Highlighter: () => chooser.Choose(d)
+                        );
+                    }
                 }
             }
-
-            return true;
         }
     }
 }

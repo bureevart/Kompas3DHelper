@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Kompas3DAutomation;
 using Kompas3DAutomation.Checks.DrawingChecks;
+using Kompas3DAutomation.Checks.Part3DChecks;
 using Kompas3DAutomation.Results;
 using Kompas6API5;
 using Microsoft.Win32;
@@ -33,11 +34,14 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var drawingResult1 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.NoHiddenObjects);
-                    kompas.ksMessage($"Результат проверки: {drawingResult1.ResultType.GetMessage()} {drawingResult1.InnerResult}");
+                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult1, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 2:
                     var drawingResult2 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.ManualTextDimensionChanges);
-                    kompas.ksMessage($"Результат проверки: {drawingResult2.ResultType.GetMessage()} {drawingResult2.InnerResult}");
+                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult2, () => checkDrawing.ClearHighlightForActiveDocument());
+                    break;
+                case 3:
+                    checkDrawing.ClearHighlightForActiveDocument();
                     break;
             }
         }
@@ -61,6 +65,10 @@ namespace KompasAutomationLibrary
                     command = 2;          // ExternalRunCommand(case 2)
                     break;
                 case 3:
+                    result = "Очистить подсветку";
+                    command = 3;
+                    break;
+                case 4:
                     itemType = 3;
                     break;
             }

@@ -3,101 +3,67 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Kompas3DAutomation.Checks.DrawingChecks;
+using Kompas3DAutomation.Results;
 using Kompas6API5;
 using KompasAPI7;
 
 namespace Kompas3DAutomation.Checks.AssemblyChecks
 {
-    public class HiddenObjectsChecker
+    /// <summary>
+    /// Проверка отсутствия скрытых компонентов в сборке.
+    /// Логика рекурсии из вашего статического кода, только bool → yield return.
+    /// </summary>
+    internal sealed class HiddenObjectsChecker : IChecker
     {
-        public static bool CheckHiddenObjects(KompasObject kompasObject, string path, bool checkSketches = false, bool checkCoordinates = false)
+        private readonly KompasObject _kompas;
+        private readonly IAssemblyDocument _asmDoc;
+
+        public HiddenObjectsChecker(KompasObject kompas, IAssemblyDocument asmDoc)
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
-
-            if (app == null)
-            {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            app.Documents.Open(path, true, true);
-            IAssemblyDocument assemblyDocument = (IAssemblyDocument)app.ActiveDocument;
-
-            try
-            {
-                if (assemblyDocument is null)
-                {
-                    throw new Exception("Документ не является 3D документом");
-                }
-
-
-                Part7 part7 = assemblyDocument.TopPart;
-                if (part7 == null)
-                {
-                    throw new Exception("Не удалось получить интерфейс IPart7 из открытого документа.");
-                }
-
-
-                if (!CheckHiddenObjects(kompasObject, part7))
-                    return false;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                assemblyDocument.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-
-            return true;
+            _kompas = kompas;
+            _asmDoc = asmDoc;
         }
 
-        public static bool CheckHiddenObjectsForActiveDocument(KompasObject kompasObject, bool checkSketches = false, bool checkCoordinates = false)
+        public IEnumerable<CheckViolation> Run()
         {
-            IApplication app = (IApplication)kompasObject.ksGetApplication7();
+            // ChooseManager есть только в 3D‑API7
+            var chooser = _asmDoc.ChooseManager;
 
-            if (app == null)
+            // Собираем всё дерево деталей/сборок
+            foreach (var part in GetAllParts(_asmDoc.TopPart))
             {
-                throw new Exception("Не удалось получить экземпляр IApplication через API7.");
-            }
-
-            IAssemblyDocument assemblyDocument = (IAssemblyDocument)app.ActiveDocument;
-
-            try
-            {
-                if (assemblyDocument is null)
+                if (part.Hidden)
                 {
-                    throw new Exception("Документ не является сборкой");
+                    yield return new CheckViolation(
+                        CheckName: $"{nameof(CheckAssembly.AssemblyChecks.HiddenObjectsPresent)}",
+                        Message: $"Компонент «{part.Name}» скрыт",
+                        TargetObject: part,
+                        Highlighter: () => chooser.Choose(part)
+                    );
                 }
-
-
-                Part7 part7 = assemblyDocument.TopPart;
-                if (part7 == null)
-                {
-                    throw new Exception("Не удалось получить интерфейс IPart7 из открытого документа.");
-                }
-
-                if (!CheckHiddenObjects(kompasObject, part7))
-                    return false;
-
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw ex;
-            }
-            finally
-            {
-                //doc3D.Close(Kompas6Constants.DocumentCloseOptions.kdDoNotSaveChanges);
-            }
-
-
-            return true;
         }
 
+        /// <summary>
+        /// Рекурсивный перебор всех IPart7: текущая + вложенные сборки.
+        /// </summary>
+        private static IEnumerable<IPart7> GetAllParts(IPart7 root)
+        {
+            yield return root;
+
+            foreach (IPart7 child in root.Parts)
+            {
+                yield return child;
+                // если это сама сборка, забираем её детей
+                if (!child.Detail)
+                    foreach (var desc in GetAllParts(child))
+                        yield return desc;
+            }
+        }
+
+        #region Obsolete
+        [Obsolete]
         private static bool CheckHiddenObjects(KompasObject kompasObject, IPart7 part)
         {
             var details = GetDetailsAndAssembliesRecursive(part);
@@ -112,6 +78,7 @@ namespace Kompas3DAutomation.Checks.AssemblyChecks
             return true;
         }
 
+        [Obsolete]
         private static List<IPart7> GetDetailsAndAssembliesRecursive(IPart7 part)
         {
             var parts = new List<IPart7>
@@ -129,5 +96,6 @@ namespace Kompas3DAutomation.Checks.AssemblyChecks
             return parts;
 
         }
+        #endregion
     }
 }

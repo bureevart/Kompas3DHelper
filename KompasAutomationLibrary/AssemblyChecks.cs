@@ -37,11 +37,14 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var assemblyResult1 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.PartInterference);
-                    kompas.ksMessage($"Результат проверки: {assemblyResult1.ResultType.GetMessage()} {assemblyResult1.InnerResult}");
+                    NativeWindowWrapper.ShowReportWinForms(kompas, assemblyResult1, () => checkAssembly.ClearHighlightForActiveDocument());
                     break;
                 case 2:
                     var assemblyResult2 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.HiddenObjectsPresent);
-                    kompas.ksMessage($"Результат проверки: {assemblyResult2.ResultType.GetMessage()} {assemblyResult2.InnerResult}");
+                    NativeWindowWrapper.ShowReportWinForms(kompas, assemblyResult2, () => checkAssembly.ClearHighlightForActiveDocument());
+                    break;
+                case 3:
+                    checkAssembly.ClearHighlightForActiveDocument();
                     break;
             }
         }
@@ -64,6 +67,10 @@ namespace KompasAutomationLibrary
                     command = 2;          // ExternalRunCommand(case 2)
                     break;
                 case 3:
+                    result = "Очистить подсветку";
+                    command = 3;
+                    break;
+                case 4:
                     itemType = 3;
                     break;
             }

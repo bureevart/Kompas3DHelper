@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -62,6 +63,7 @@
     <Compile Include="Checks\AssemblyChecks\HiddenObjectsChecker.cs" />
     <Compile Include="Checks\AssemblyChecks\PartInterferenceChecker.cs" />
     <Compile Include="Checks\DrawingChecks\HiddenObjectsChecker.cs" />
+    <Compile Include="Checks\IChecker.cs" />
     <Compile Include="Checks\DrawingChecks\ManualTextDimensionChangesChecker.cs" />
     <Compile Include="Checks\DrawingChecks\NoObjectsCrossingSheetBorderChecker.cs" />
     <Compile Include="Checks\DrawingChecks\ViewIntegrityChecker.cs" />
@@ -73,9 +75,8 @@
     <Compile Include="Checks\Part3DChecks\HiddenObjectsChecker.cs" />
     <Compile Include="Checks\Part3DChecks\SelfIntersectChecker.cs" />
     <Compile Include="Checks\Part3DChecks\SingleSolidBodyChecker.cs" />
-    <Compile Include="Results\CheckResult.cs" />
-    <Compile Include="Results\CheckResultExtensions.cs" />
-    <Compile Include="Results\CheckResults.cs" />
+    <Compile Include="NecessaryFiles.cs" />
+    <Compile Include="Results\CheckReport.cs" />
     <Compile Include="KompasConnectionObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
