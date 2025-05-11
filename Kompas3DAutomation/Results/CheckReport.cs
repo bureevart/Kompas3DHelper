@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kompas3DAutomation.Results
 {
     /// Один конкретный дефект
     [EditorBrowsable(EditorBrowsableState.Never)]
     public record CheckViolation
-     (
+    (
          string CheckName,          // «NoHiddenObjects», «ViewIntegrity»…
          string Message,            // Текст для отчёта
          object TargetObject,       // Любой API‑объект Kompas, нужен для подсветки
          Action Highlighter = null  // Как подсветить (опционально)
-     );
+    );
 
     /// Итог по файлу / документу
     public class CheckReport

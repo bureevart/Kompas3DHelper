@@ -1,13 +1,7 @@
-﻿using Kompas3DAutomation.Checks;
-using Kompas3DAutomation.Results;
-using Kompas6API5;
+﻿using Kompas3DAutomation.Results;
 using Kompas6Constants;
 using KompasAPI7;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kompas3DAutomation.Checks.DrawingChecks
 {

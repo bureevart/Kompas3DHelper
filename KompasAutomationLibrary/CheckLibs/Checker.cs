@@ -1,25 +1,25 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Interop;
 using Kompas3DAutomation;
-using Kompas3DAutomation.Checks.DrawingChecks;
-using Kompas3DAutomation.Checks.Part3DChecks;
-using Kompas3DAutomation.Results;
 using Kompas6API5;
+using KompasAutomationLibrary.CheckLibs.Wpf;
+using KompasAutomationLibrary.CheckLibs.Wpf.ViewModels;
+using KompasAutomationLibrary.Utils;
 using Microsoft.Win32;
-using static Kompas3DAutomation.Checks.DrawingChecks.CheckDrawing;
 
-namespace KompasAutomationLibrary
+namespace KompasAutomationLibrary.CheckLibs
 {
     [ComVisible(true)]
-    [Guid("e94f8265-2f21-4b0e-b89e-63ffe94251ff")]
+    [Guid("a2e9bb86-8d58-4ea4-b803-b087bf4cba7b")]
     [ClassInterface(ClassInterfaceType.AutoDual)]
-    public class Part3DChecks
+    public class Checker
     {
         [return: MarshalAs(UnmanagedType.BStr)]
         public string GetLibraryName()
         {
-            return "Проверки моделей";
+            return "Валидация ЭКД";
         }
 
         public void ExternalRunCommand([In] short command, [In] short mode, [In, MarshalAs(UnmanagedType.IDispatch)] object kompas_)
@@ -28,26 +28,36 @@ namespace KompasAutomationLibrary
 
             KompasConnectionObject kompasConnectionObject = new KompasConnectionObject();
             kompasConnectionObject.Connect(kompas_);
-
-            var checkPart3D = new CheckPart3D(kompasConnectionObject);
             
             switch (command)
             {
-                case 1:
-                    var part3DResult1 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.HiddenObjectsPresent);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, part3DResult1, () => checkPart3D.ClearHighlightForActiveDocument());
+                case 1:   // «Открыть модуль валидации ЭКД»
+                {
+                    if (System.Windows.Application.Current == null)
+                        new System.Windows.Application();
+
+                    var kind = Utils.Utils.GetCurrentDocKind(kompas);
+                    var vm   = new ValidationVm(kind);
+                    var win  = new ValidationWindow(vm);
+
+                    new WindowInteropHelper(win).Owner =
+                        KompasWindowHelper.GetKompasHwnd(kompas);
+
+                    if (win.ShowDialog() == true)
+                    {
+                        long bits = win.SelectedFlags;
+                        if (bits == 0)
+                        {
+                            MessageBox.Show("Не выбрано ни одной проверки.");
+                            return;
+                        }
+                        
+                        var result = CheckRunner.Run(kompasConnectionObject, kind, bits);
+                        KompasWindowHelper.Show(kompas, result.Report, result.Clear);
+                    }
                     break;
-                case 2:
-                    var part3DResult2 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.SelfIntersectionOfFaces);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, part3DResult2, () => checkPart3D.ClearHighlightForActiveDocument());
-                    break;
-                case 3:
-                    var part3DResult3 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.SingleSolidBody);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, part3DResult3, () => checkPart3D.ClearHighlightForActiveDocument());
-                    break;
-                case 4:
-                    checkPart3D.ClearHighlightForActiveDocument();
-                    break;
+
+                }
             }
         }
 
@@ -61,22 +71,10 @@ namespace KompasAutomationLibrary
             switch (number)
             {
                 case 1:
-                    result = "Проверка на наличие скрытых объектов";
+                    result = "Открыть модуль валидации ЭКД";
                     command = 1;
                     break;
                 case 2:
-                    result = "Проверка на самопересечения поверхностей";
-                    command = 2;
-                    break;
-                case 3:
-                    result = "Проверка на наличие более одного твердого тела";
-                    command = 3;
-                    break;
-                case 4:
-                    result = "Очистить подсветку";
-                    command = 4;
-                    break;
-                case 5:
                     itemType = 3;
                     break;
             }
@@ -84,7 +82,6 @@ namespace KompasAutomationLibrary
             return result;
         }
 
-        // регистрация библиотеки
         #region COM Registration
         // Эта функция выполняется при регистрации класса для COM
         // Она добавляет в ветку реестра компонента раздел Kompas_Library,

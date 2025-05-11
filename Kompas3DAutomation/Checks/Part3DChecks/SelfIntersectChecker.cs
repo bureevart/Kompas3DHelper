@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using Kompas6API5;
-using Kompas6Constants3D;
 using KompasAPI7;
-using Kompas3DAutomation.Checks;
 using Kompas3DAutomation.Results;
-using Kompas3DAutomation.Checks.DrawingChecks;
 
 namespace Kompas3DAutomation.Checks.Part3DChecks
 {

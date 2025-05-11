@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Kompas3DAutomation.Checks.DrawingChecks;
 using Kompas3DAutomation;
-using Kompas6API5;
-using Microsoft.Win32;
-using Kompas3DAutomation.Results;
 using Kompas3DAutomation.Checks.AssemblyChecks;
+using Kompas6API5;
+using KompasAutomationLibrary.Utils;
+using Microsoft.Win32;
 
-namespace KompasAutomationLibrary
+namespace KompasAutomationLibrary.CheckLibs
 {
     [ComVisible(true)]
     [Guid("16ca0cd7-ae8a-405e-9468-c0825d74d56b")]
@@ -37,11 +32,11 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var assemblyResult1 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.PartInterference);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, assemblyResult1, () => checkAssembly.ClearHighlightForActiveDocument());
+                    KompasWindowHelper.Show(kompas, assemblyResult1, () => checkAssembly.ClearHighlightForActiveDocument());
                     break;
                 case 2:
                     var assemblyResult2 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.HiddenObjectsPresent);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, assemblyResult2, () => checkAssembly.ClearHighlightForActiveDocument());
+                    KompasWindowHelper.Show(kompas, assemblyResult2, () => checkAssembly.ClearHighlightForActiveDocument());
                     break;
                 case 3:
                     checkAssembly.ClearHighlightForActiveDocument();

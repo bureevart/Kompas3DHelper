@@ -2,13 +2,11 @@
 using System.Runtime.InteropServices;
 using Kompas3DAutomation;
 using Kompas3DAutomation.Checks.DrawingChecks;
-using Kompas3DAutomation.Checks.Part3DChecks;
-using Kompas3DAutomation.Results;
 using Kompas6API5;
+using KompasAutomationLibrary.Utils;
 using Microsoft.Win32;
-using static Kompas3DAutomation.Checks.DrawingChecks.CheckDrawing;
 
-namespace KompasAutomationLibrary
+namespace KompasAutomationLibrary.CheckLibs
 {
     [ComVisible(true)]
     [Guid("d009ace2-cac1-492f-9e03-56f073b2e4ab")]
@@ -34,11 +32,11 @@ namespace KompasAutomationLibrary
             {
                 case 1:
                     var drawingResult1 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.NoHiddenObjects);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult1, () => checkDrawing.ClearHighlightForActiveDocument());
+                    KompasWindowHelper.Show(kompas, drawingResult1, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 2:
                     var drawingResult2 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.ManualTextDimensionChanges);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult2, () => checkDrawing.ClearHighlightForActiveDocument());
+                    KompasWindowHelper.Show(kompas, drawingResult2, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 3:
                     checkDrawing.ClearHighlightForActiveDocument();
