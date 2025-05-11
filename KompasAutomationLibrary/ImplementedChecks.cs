@@ -10,13 +10,13 @@ namespace KompasAutomationLibrary
     {
         public static readonly List<CheckInfo> AllChecks = new()
         {
-            new("Скрытые объекты",  CheckDrawing.DrawingChecks.NoHiddenObjects,          DocKind.Drawing2D),
-            new("Ручные размеры",   CheckDrawing.DrawingChecks.ManualTextDimensionChanges, DocKind.Drawing2D),
+            new("Проверка на отсутствие скрытых объектов в поле чертежа", CheckDrawing.DrawingChecks.NoHiddenObjects, DocKind.Drawing2D),
+            new("Проверка размеров на ручное внесение текстовых изменений", CheckDrawing.DrawingChecks.ManualTextDimensionChanges, DocKind.Drawing2D),
 
-            new("Скрытые компоненты", CheckAssembly.AssemblyChecks.HiddenObjectsPresent, DocKind.Assembly),
+            new("Проверка на наличие скрытых компонентов", CheckAssembly.AssemblyChecks.HiddenObjectsPresent, DocKind.Assembly),
 
-            new("Скрытые объекты (3D)", CheckPart3D.Part3DChecks.HiddenObjectsPresent,   DocKind.Part3D),
-            new("Самопересечение граней", CheckPart3D.Part3DChecks.SelfIntersectionOfFaces, DocKind.Part3D)
+            new("Наличие скрытых объектов", CheckPart3D.Part3DChecks.HiddenObjectsPresent, DocKind.Part3D),
+            new("Проверка на наличие более одного твердого тела", CheckPart3D.Part3DChecks.SingleSolidBody, DocKind.Part3D)
         };
         
         public static readonly Dictionary<DocKind, string> KindDisplay = new()

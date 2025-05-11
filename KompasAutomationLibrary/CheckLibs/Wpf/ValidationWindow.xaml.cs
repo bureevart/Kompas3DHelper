@@ -1,5 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using KompasAutomationLibrary.CheckLibs.Wpf.ViewModels;
+using KompasAutomationLibrary.CheckMeta;
 
 namespace KompasAutomationLibrary.CheckLibs.Wpf
 {
@@ -10,7 +14,7 @@ namespace KompasAutomationLibrary.CheckLibs.Wpf
         public ValidationWindow(ValidationVm vm)
         {
             InitializeComponent();
-            ViewModel   = vm;
+            ViewModel = vm;
             DataContext = vm;
         }
 
@@ -18,7 +22,18 @@ namespace KompasAutomationLibrary.CheckLibs.Wpf
         {
             DialogResult = true;
         }
-
-        public long SelectedFlags => ViewModel.GetCheckedBits();
+        
+        /// <summary>Все выбранные в дереве проверки.</summary>
+        public IEnumerable<CheckInfo> SelectedChecks =>
+            ViewModel.Roots
+                .SelectMany(r => r.Children)
+                .Where(n => n.IsChecked == true)
+                .Select(n => n.CheckInfo);
+    
+        /// <summary>Битовая маска только для выбранных</summary>
+        public long SelectedBits =>
+            SelectedChecks
+                .Select(ci => Convert.ToInt64(ci.FlagValue))
+                .Aggregate(0L, (acc, b) => acc | b);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Kompas3DAutomation;
 using Kompas3DAutomation.Checks.AssemblyChecks;
 using Kompas3DAutomation.Checks.DrawingChecks;
@@ -30,6 +31,29 @@ public static class CheckRunner
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
 
+    /// <summary>
+    /// Возвращает битовую маску всех проверок, реализованных для данного вида документа.
+    /// </summary>
+    public static long GetValidMask(DocKind kind)
+    {
+        return kind switch
+        {
+            DocKind.Drawing2D => Enum.GetValues(typeof(CheckDrawing.DrawingChecks))
+                .Cast<CheckDrawing.DrawingChecks>()
+                .Aggregate(0L, (acc, f) => acc | Convert.ToInt64(f)),
+
+            DocKind.Part3D => Enum.GetValues(typeof(CheckPart3D.Part3DChecks))
+                .Cast<CheckPart3D.Part3DChecks>()
+                .Aggregate(0L, (acc, f) => acc | Convert.ToInt64(f)),
+
+            DocKind.Assembly => Enum.GetValues(typeof(CheckAssembly.AssemblyChecks))
+                .Cast<CheckAssembly.AssemblyChecks>()
+                .Aggregate(0L, (acc, f) => acc | Convert.ToInt64(f)),
+
+            _ => 0L
+        };
+    }
+    
     private static CheckRunResult RunChecks<TEnum>(dynamic checker, TEnum flags)
         where TEnum : struct
     {

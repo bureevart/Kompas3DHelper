@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Interop;
@@ -45,16 +46,26 @@ namespace KompasAutomationLibrary.CheckLibs
 
                     if (win.ShowDialog() == true)
                     {
-                        var bits = win.SelectedFlags;
-                        if (bits == 0)
+                        var sel = win.SelectedChecks.ToList();
+                        if (sel.Count == 0)
                         {
                             MessageBox.Show("Не выбрано ни одной проверки.");
                             return;
                         }
-                        
+
+                        if (sel.Any(ci => ci.Kind != kind))
+                        {
+                            MessageBox.Show("Выбраны проверки другого типа документа.",
+                                "Неверный выбор", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+
+                        long bits = win.SelectedBits;
+
                         var result = CheckRunner.Run(kompasConnectionObject, kind, bits);
                         KompasWindowHelper.Show(kompas, result.Report, result.Clear);
                     }
+
                     break;
 
                 }
