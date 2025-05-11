@@ -13,11 +13,9 @@ namespace KompasAutomationLibrary.Utils
         public static IntPtr GetKompasHwnd(KompasObject kompas) =>
             new IntPtr(kompas.ksGetHWindow());
         
-        public static void Show(KompasObject kompas,
-            CheckReport  report,
-            Action       clearHighlight)
+        public static void Show(KompasObject kompas, CheckReport report, Action clearHighlight)
         {
-            if (System.Windows.Application.Current == null)          // инициализируем WPF
+            if (System.Windows.Application.Current == null)
                 new System.Windows.Application();
 
             var wnd = new CheckReportWindow(report, clearHighlight);

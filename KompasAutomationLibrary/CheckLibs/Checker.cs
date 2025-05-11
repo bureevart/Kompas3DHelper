@@ -45,7 +45,7 @@ namespace KompasAutomationLibrary.CheckLibs
 
                     if (win.ShowDialog() == true)
                     {
-                        long bits = win.SelectedFlags;
+                        var bits = win.SelectedFlags;
                         if (bits == 0)
                         {
                             MessageBox.Show("Не выбрано ни одной проверки.");
