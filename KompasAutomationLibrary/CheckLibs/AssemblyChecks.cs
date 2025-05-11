@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Kompas3DAutomation;
-using Kompas3DAutomation.Checks.DrawingChecks;
-using Kompas3DAutomation.Checks.Part3DChecks;
-using Kompas3DAutomation.Results;
+using Kompas3DAutomation.Checks.AssemblyChecks;
 using Kompas6API5;
+using KompasAutomationLibrary.Utils;
 using Microsoft.Win32;
-using static Kompas3DAutomation.Checks.DrawingChecks.CheckDrawing;
 
-namespace KompasAutomationLibrary
+namespace KompasAutomationLibrary.CheckLibs
 {
     [ComVisible(true)]
-    [Guid("d009ace2-cac1-492f-9e03-56f073b2e4ab")]
+    [Guid("16ca0cd7-ae8a-405e-9468-c0825d74d56b")]
     [ClassInterface(ClassInterfaceType.AutoDual)]
-    public class DrawingChecks
+    public class AssemblyChecks
     {
         [return: MarshalAs(UnmanagedType.BStr)]
         public string GetLibraryName()
         {
-            return "Проверки чертежей";
+            return "Проверки сборок";
         }
 
         public void ExternalRunCommand([In] short command, [In] short mode, [In, MarshalAs(UnmanagedType.IDispatch)] object kompas_)
@@ -28,20 +26,20 @@ namespace KompasAutomationLibrary
             KompasConnectionObject kompasConnectionObject = new KompasConnectionObject();
             kompasConnectionObject.Connect(kompas_);
 
-            var checkDrawing = new CheckDrawing(kompasConnectionObject);
+            var checkAssembly = new CheckAssembly(kompasConnectionObject);
 
             switch (command)
             {
                 case 1:
-                    var drawingResult1 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.NoHiddenObjects);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult1, () => checkDrawing.ClearHighlightForActiveDocument());
+                    var assemblyResult1 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.PartInterference);
+                    KompasWindowHelper.Show(kompas, assemblyResult1, () => checkAssembly.ClearHighlightForActiveDocument());
                     break;
                 case 2:
-                    var drawingResult2 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.ManualTextDimensionChanges);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, drawingResult2, () => checkDrawing.ClearHighlightForActiveDocument());
+                    var assemblyResult2 = checkAssembly.CheckForActiveDocument(CheckAssembly.AssemblyChecks.HiddenObjectsPresent);
+                    KompasWindowHelper.Show(kompas, assemblyResult2, () => checkAssembly.ClearHighlightForActiveDocument());
                     break;
                 case 3:
-                    checkDrawing.ClearHighlightForActiveDocument();
+                    checkAssembly.ClearHighlightForActiveDocument();
                     break;
             }
         }
@@ -56,12 +54,11 @@ namespace KompasAutomationLibrary
             switch (number)
             {
                 case 1:
-                    result = "Проверка на наличие скрытых объектов в чертеже";
+                    result = "Проверка врезания деталей";
                     command = 1;          // ExternalRunCommand(case 1)
                     break;
-
                 case 2:
-                    result = "Проверка на ручное изменение значений";
+                    result = "Проверка наличия скрытых компонентов";
                     command = 2;          // ExternalRunCommand(case 2)
                     break;
                 case 3:

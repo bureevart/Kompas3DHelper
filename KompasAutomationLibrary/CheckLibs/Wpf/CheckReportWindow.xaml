@@ -1,0 +1,60 @@
+<Window x:Class="KompasAutomationLibrary.CheckLibs.Wpf.CheckReportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:data="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:results="clr-namespace:Kompas3DAutomation.Results;assembly=Kompas3DAutomation"
+        xmlns:viewModels="clr-namespace:KompasAutomationLibrary.CheckLibs.Wpf.ViewModels"
+        mc:Ignorable="d"
+        Title="Результаты проверки"
+        MinWidth="640" MinHeight="420"
+        Width="640" Height="420"
+        WindowStartupLocation="CenterOwner"
+        d:DataContext="{d:DesignInstance Type=viewModels:ReportVm, IsDesignTimeCreatable=False}">
+
+  <DockPanel>
+
+    <StackPanel DockPanel.Dock="Bottom"
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Margin="4">
+      <Button Content="Очистить подсветку"
+              Margin="0,0,6,0"
+              Padding="6,2"
+              Click="Clear_Click"/>
+      <Button Content="Сохранить в CSV"
+              Padding="6,2"
+              Click="Save_Click"/>
+    </StackPanel>
+
+    <ListView ItemsSource="{Binding Grouped}"
+              x:Name="Lv"
+              MouseDoubleClick="Lv_DoubleClick">
+      <ListView.GroupStyle>
+        <GroupStyle>
+          <GroupStyle.HeaderTemplate>
+            <DataTemplate DataType="{x:Type data:CollectionViewGroup}">
+              <TextBlock Text="{Binding Name}"
+                         FontWeight="Bold"
+                         Margin="2,6,0,2"/>
+            </DataTemplate>
+          </GroupStyle.HeaderTemplate>
+          <GroupStyle.Panel>
+            <ItemsPanelTemplate>
+              <StackPanel/>
+            </ItemsPanelTemplate>
+          </GroupStyle.Panel>
+        </GroupStyle>
+      </ListView.GroupStyle>
+
+      <ListView.ItemTemplate>
+        <DataTemplate DataType="{x:Type results:CheckViolation}">
+          <TextBlock Text="{Binding Message}"
+                     TextWrapping="Wrap"/>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
+
+  </DockPanel>
+</Window>

@@ -1,9 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Kompas3DAutomation.Checks.DrawingChecks;
 using Kompas3DAutomation.Results;
 using Kompas6API5;
 using KompasAPI7;

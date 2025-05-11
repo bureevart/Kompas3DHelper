@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
 using Kompas3DAutomation;
 using Kompas3DAutomation.Checks.DrawingChecks;
-using Kompas3DAutomation.Checks.Part3DChecks;
-using Kompas3DAutomation.Results;
 using Kompas6API5;
+using KompasAutomationLibrary.Utils;
 using Microsoft.Win32;
-using static Kompas3DAutomation.Checks.DrawingChecks.CheckDrawing;
 
-namespace KompasAutomationLibrary
+namespace KompasAutomationLibrary.CheckLibs
 {
     [ComVisible(true)]
-    [Guid("e94f8265-2f21-4b0e-b89e-63ffe94251ff")]
+    [Guid("d009ace2-cac1-492f-9e03-56f073b2e4ab")]
     [ClassInterface(ClassInterfaceType.AutoDual)]
-    public class Part3DChecks
+    public class DrawingChecks
     {
         [return: MarshalAs(UnmanagedType.BStr)]
         public string GetLibraryName()
         {
-            return "Проверки моделей";
+            return "Проверки чертежей";
         }
 
         public void ExternalRunCommand([In] short command, [In] short mode, [In, MarshalAs(UnmanagedType.IDispatch)] object kompas_)
@@ -29,24 +26,20 @@ namespace KompasAutomationLibrary
             KompasConnectionObject kompasConnectionObject = new KompasConnectionObject();
             kompasConnectionObject.Connect(kompas_);
 
-            var checkPart3D = new CheckPart3D(kompasConnectionObject);
-            
+            var checkDrawing = new CheckDrawing(kompasConnectionObject);
+
             switch (command)
             {
                 case 1:
-                    var part3DResult1 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.HiddenObjectsPresent);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, part3DResult1, () => checkPart3D.ClearHighlightForActiveDocument());
+                    var drawingResult1 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.NoHiddenObjects);
+                    KompasWindowHelper.Show(kompas, drawingResult1, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 2:
-                    var part3DResult2 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.SelfIntersectionOfFaces);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, part3DResult2, () => checkPart3D.ClearHighlightForActiveDocument());
+                    var drawingResult2 = checkDrawing.CheckForActiveDocument(CheckDrawing.DrawingChecks.ManualTextDimensionChanges);
+                    KompasWindowHelper.Show(kompas, drawingResult2, () => checkDrawing.ClearHighlightForActiveDocument());
                     break;
                 case 3:
-                    var part3DResult3 = checkPart3D.CheckForActiveDocument(CheckPart3D.Part3DChecks.SingleSolidBody);
-                    NativeWindowWrapper.ShowReportWinForms(kompas, part3DResult3, () => checkPart3D.ClearHighlightForActiveDocument());
-                    break;
-                case 4:
-                    checkPart3D.ClearHighlightForActiveDocument();
+                    checkDrawing.ClearHighlightForActiveDocument();
                     break;
             }
         }
@@ -61,28 +54,28 @@ namespace KompasAutomationLibrary
             switch (number)
             {
                 case 1:
-                    result = "Проверка на наличие скрытых объектов";
-                    command = 1;
+                    result = "Проверка на наличие скрытых объектов в чертеже";
+                    command = 1;          // ExternalRunCommand(case 1)
                     break;
+
                 case 2:
-                    result = "Проверка на самопересечения поверхностей";
-                    command = 2;
+                    result = "Проверка на ручное изменение значений";
+                    command = 2;          // ExternalRunCommand(case 2)
                     break;
                 case 3:
-                    result = "Проверка на наличие более одного твердого тела";
+                    result = "Очистить подсветку";
                     command = 3;
                     break;
                 case 4:
-                    result = "Очистить подсветку";
-                    command = 4;
-                    break;
-                case 5:
                     itemType = 3;
                     break;
             }
 
             return result;
         }
+
+
+
 
         // регистрация библиотеки
         #region COM Registration

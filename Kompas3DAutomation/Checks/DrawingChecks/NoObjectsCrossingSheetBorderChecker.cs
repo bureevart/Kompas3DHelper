@@ -1,11 +1,6 @@
 ﻿using Kompas6API5;
 using KompasAPI7;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kompas3DAutomation.Checks.DrawingChecks
 {
