@@ -30,7 +30,6 @@ public static class CheckRunner
             _ => throw new ArgumentOutOfRangeException(nameof(kind))
         };
 
-    /* универсальный хелпер */
     private static CheckRunResult RunChecks<TEnum>(dynamic checker, TEnum flags)
         where TEnum : struct
     {

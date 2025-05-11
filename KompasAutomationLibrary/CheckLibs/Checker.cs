@@ -31,14 +31,14 @@ namespace KompasAutomationLibrary.CheckLibs
             
             switch (command)
             {
-                case 1:   // «Открыть модуль валидации ЭКД»
+                case 1:
                 {
                     if (System.Windows.Application.Current == null)
                         new System.Windows.Application();
 
                     var kind = Utils.Utils.GetCurrentDocKind(kompas);
-                    var vm   = new ValidationVm(kind);
-                    var win  = new ValidationWindow(vm);
+                    var vm = new ValidationVm(kind);
+                    var win = new ValidationWindow(vm);
 
                     new WindowInteropHelper(win).Owner =
                         KompasWindowHelper.GetKompasHwnd(kompas);
