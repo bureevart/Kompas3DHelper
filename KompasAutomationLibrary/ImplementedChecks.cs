@@ -12,6 +12,8 @@ namespace KompasAutomationLibrary
         {
             new("Проверка на отсутствие скрытых объектов в поле чертежа", CheckDrawing.DrawingChecks.NoHiddenObjects, DocKind.Drawing2D),
             new("Проверка размеров на ручное внесение текстовых изменений", CheckDrawing.DrawingChecks.ManualTextDimensionChanges, DocKind.Drawing2D),
+            new("Проверка расположения объектов на заданных слоях", CheckDrawing.DrawingChecks.LayerObjectsPosition, DocKind.Drawing2D),
+
 
             new("Проверка на наличие скрытых компонентов", CheckAssembly.AssemblyChecks.HiddenObjectsPresent, DocKind.Assembly),
 

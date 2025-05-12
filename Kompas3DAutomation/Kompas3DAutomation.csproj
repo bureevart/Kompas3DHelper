@@ -63,6 +63,7 @@
     <Compile Include="Checks\AssemblyChecks\HiddenObjectsChecker.cs" />
     <Compile Include="Checks\AssemblyChecks\PartInterferenceChecker.cs" />
     <Compile Include="Checks\DrawingChecks\HiddenObjectsChecker.cs" />
+    <Compile Include="Checks\DrawingChecks\LayerObjectsPositionChecker.cs" />
     <Compile Include="Checks\IChecker.cs" />
     <Compile Include="Checks\DrawingChecks\ManualTextDimensionChangesChecker.cs" />
     <Compile Include="Checks\DrawingChecks\NoObjectsCrossingSheetBorderChecker.cs" />

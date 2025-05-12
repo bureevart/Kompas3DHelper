@@ -48,6 +48,9 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
 
             if (checks.HasFlag(DrawingChecks.ManualTextDimensionChanges))
                 Add(new ManualTextDimensionChangesChecker(_kompasObject.Kompas, doc2D));
+            
+            if (checks.HasFlag(DrawingChecks.LayerObjectsPosition))
+                Add(new LayerObjectsPositionChecker(_kompasObject.Kompas, doc2D));
 
             return report;
         }
@@ -95,7 +98,7 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
             /// <summary>
             /// Проверка размеров на ручное внесение текстовых изменений.
             /// </summary>
-            ManualTextDimensionChanges = 1 << 5
+            ManualTextDimensionChanges = 1 << 5,
         }
         #endregion
     }

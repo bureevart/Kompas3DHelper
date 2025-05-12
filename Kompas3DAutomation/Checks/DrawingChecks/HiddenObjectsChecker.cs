@@ -59,7 +59,7 @@ namespace Kompas3DAutomation.Checks.DrawingChecks
                     foreach (var v in CheckForHiddenInLayerGroup(layerGroup, doc2D))
                         yield return v;
 
-                  /*var chooser = ((IKompasDocument2D1)doc2D).ChooseManager;
+                    /*var chooser = ((IKompasDocument2D1)doc2D).ChooseManager;
                     foreach (Layer layer in layerGroup.Layers)
                     {
                         if (!layer.Visible)
